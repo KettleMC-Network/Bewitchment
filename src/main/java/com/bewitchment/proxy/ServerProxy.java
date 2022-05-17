@@ -61,7 +61,7 @@ public class ServerProxy {
 
 	public IThreadListener getThreadListener(final MessageContext context) {
 		if (context.side.isServer()) {
-			return context.getServerHandler().player.server;
+			return context.getServerHandler().player.getServer();
 		} else {
 			throw new RuntimeException("Tried to get the IThreadListener from a client-side MessageContext on the dedicated server");
 		}
