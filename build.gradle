@@ -1,7 +1,8 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net/' }
         maven { url "https://plugins.gradle.org/m2/" }
         maven {
             url "https://www.cursemaven.com"
@@ -12,14 +13,15 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
         classpath 'com.wynprice.cursemaven:CurseMaven:2.1.5'
-        classpath "org.spongepowered:mixingradle:0.6-SNAPSHOT"
+        classpath "org.spongepowered:mixingradle:0.7-SNAPSHOT"
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'com.wynprice.cursemaven'
+apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 
 boolean isFat = hasProperty("isFat")
 String buildType = (isFat ? "FAT" : "THIN")
@@ -34,24 +36,44 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.2-14.23.5.2847"
-    runDir = "run"
-    mappings = "stable_39"
-    clientRunArgs += "--username=Bewitchment"
-    clientJvmArgs += "-Dfml.coreMods.load=com.bewitchment.core.BewitchmentFMLLoadingPlugin"
-    serverJvmArgs += "-Dfml.coreMods.load=com.bewitchment.core.BewitchmentFMLLoadingPlugin"
+    mappings channel: 'stable', version: '39-1.12'
+    runs {
+        client {
+            workingDirectory project.file('run')
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+        }
+
+        server {
+
+            // Recommended logging data for a userdev environment
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
+    //clientRunArgs += "--username=Bewitchment"
+    //clientJvmArgs += "-Dfml.coreMods.load=com.bewitchment.core.BewitchmentFMLLoadingPlugin"
+    //serverJvmArgs += "-Dfml.coreMods.load=com.bewitchment.core.BewitchmentFMLLoadingPlugin"
 }
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 repositories {
     flatDir {
         dirs 'libs'
     }
     maven { url = "http://dvs1.progwml6.com/files/maven" }
-    maven { url = "https://minecraft.curseforge.com/api/maven" }
+    maven { url "https://cursemaven.com" }
     maven { url "http://maven.tterrag.com" }
     maven { url "https://maven.blamejared.com" }
     maven { url "https://maven.mcmoddev.com/" }
-    maven { url "https://repo.spongepowered.org/maven" }
+    maven { url "https://repo.spongepowered.org/repository/maven-public/" }
     maven {
         name = "buildcraft"
         url = "https://mod-buildcraft.com/maven"
@@ -59,12 +81,6 @@ repositories {
     maven {
         name = "thiakil"
         url = "http://maven.thiakil.com"
-    }
-    maven {
-        url = "http://dvs1.progwml6.com/files/maven"
-    }
-    maven {
-        url "https://www.cursemaven.com"
     }
 }
 
@@ -74,48 +90,35 @@ configurations {
 }
 
 dependencies {
-    deobfProvided "mezz.jei:jei_1.12.2:4.16.1.302"
-    deobfProvided "thaumcraft:Thaumcraft:1.12.2:6.1.BETA26"
-    deobfProvided "dynamictrees:DynamicTrees:1.12.2:0.9.19"
-    deobfProvided "vazkii.botania:Botania:r1.10-363.119"
-    deobfProvided "betteranimalsplus:betteranimalsplus:1.12.2:9.0.1"
-    deobfProvided "curse.maven:jeid-296289:2919737"
-    deobfProvided "curse.maven:quark-243121:2924091"
-    deobfProvided "curse.maven:autoreglib-250363:2746011"
-    deobfProvided "curse.maven:mowzies-mobs-250498:3048685"
-    deobfProvided "curse.maven:chisel-235279:2915375"
-    deobfProvided "curse.maven:ctm-267602:2915363"
-    deobfProvided "curse.maven:consecration-284001:3010339"
-    deobfProvided "curse.maven:miskatonic-mysteries-349934:2835243"
-    deobfProvided "curse.maven:elementaristics-302668:2826887"
-    deobfProvided "curse.maven:hwyla-253449:2568751"
-    deobfProvided "curse.maven:wawla-what-are-we-looking-at-224712:2916368"
-    deobfProvided "curse.maven:just-enough-resources-jer-240630:2728585"
-    deobfProvided "curse.maven:coveted-mobs-381672:3026939"
-    deobfProvided "curse.maven:serene-seasons-291874:2799213"
-    deobfProvided "curse.maven:tough-as-nails-246391:2710969"
-    deobfProvided "curse.maven:llibrary-243298:2504999"
-    deobfCompile "com.azanor.baubles:Baubles:1.12-1.5.2"
-    deobfCompile "vazkii.patchouli:Patchouli:1.0-21.3"
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+    implementation fg.deobf("mezz.jei:jei_1.12.2:4.16.1.302")
+    implementation fg.deobf( "curse.maven:thaumcraft-223628:2629023")
+    implementation fg.deobf("curse.maven:dynamictrees-252818:3092957")
+    implementation fg.deobf("vazkii.botania:Botania:r1.10-363.119")
+    implementation fg.deobf("curse.maven:betteranimalsplus-303557:2933382")
+    implementation fg.deobf("curse.maven:jeid-296289:3581715")
+    implementation fg.deobf("curse.maven:quark-243121:2924091")
+    implementation fg.deobf("curse.maven:autoreglib-250363:2746011")
+    implementation fg.deobf("curse.maven:mowzies-mobs-250498:3048685")
+    implementation fg.deobf("curse.maven:chisel-235279:2915375")
+    implementation fg.deobf("curse.maven:ctm-267602:2915363")
+    //implementation fg.deobf("curse.maven:consecration-284001:3010340")
+    implementation fg.deobf("curse.maven:miskatonic-mysteries-349934:2835243")
+    implementation fg.deobf("curse.maven:elementaristics-302668:2826887")
+    implementation fg.deobf("curse.maven:hwyla-253449:2568751")
+    implementation fg.deobf("curse.maven:wawla-what-are-we-looking-at-224712:2916368")
+    implementation fg.deobf("curse.maven:just-enough-resources-jer-240630:2728585")
+    implementation fg.deobf("curse.maven:coveted-mobs-381672:3026939")
+    implementation fg.deobf("curse.maven:serene-seasons-291874:2799213")
+    implementation fg.deobf("curse.maven:tough-as-nails-246391:2710969")
+    implementation fg.deobf("curse.maven:llibrary-243298:2504999")
+    compile fg.deobf("com.azanor.baubles:Baubles:1.12-1.5.2")
+    compile fg.deobf("vazkii.patchouli:Patchouli:1.0-21.3")
     implementation 'org.jetbrains:annotations:20.1.0'
-    shade('org.spongepowered:mixin:0.8') {
+    shade('org.spongepowered:mixin:0.8-SNAPSHOT') {
         transitive = false
-        // }
-        // if(isFat) {
-        //     embed('org.spongepowered:mixin:0.8-SNAPSHOT') {
-        //        ['gson','guava','commons-io'].each {
-        //            exclude module: it
-        //        }
-        //        exclude module: 'launchwrapper'
-        //    }
-        // }else{
-        //     compile ('org.spongepowered:mixin:0.8-SNAPSHOT'){
-        //        ['gson','guava','commons-io'].each {
-        //            exclude module: it
-        //        }
-        //    }
-        // }
     }
+    compileOnly fileTree(dir: 'libs', include: '*.jar') // requires consecration-1.12.2-1.0.6.1.jar
 
     jar {
         manifest.attributes(
@@ -140,11 +143,11 @@ dependencies {
     }
 
     processResources {
-        inputs.property "version", project.version
-        inputs.property "mcversion", project.minecraft.version
+        inputs.property "version", "14.23.5.2860"
+        inputs.property "mcversion", "1.12.2"
         from(sourceSets.main.resources.srcDirs) {
             include 'mcmod.info'
-            expand 'version': project.version, 'mcversion': project.minecraft.version
+            expand 'version': "1.12.2", 'mcversion': "14.23.5.2860"
         }
         from(sourceSets.main.resources.srcDirs) {
             exclude 'mcmod.info'
@@ -160,4 +163,6 @@ dependencies {
             refMap = "mixins.bewitchment.refmap.json"
         }
     }
+
+    jar.finalizedBy('reobfJar')
 }
