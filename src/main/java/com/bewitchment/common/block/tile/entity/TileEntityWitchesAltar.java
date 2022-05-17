@@ -201,7 +201,7 @@ public class TileEntityWitchesAltar extends ModTileEntity implements ITickable {
 		if (state.getBlock() instanceof BlockLog) state = state.withProperty(BlockLog.LOG_AXIS, BlockLog.EnumAxis.Y);
 		else if (state.getBlock() instanceof BlockStatue) state = state.getBlock().getDefaultState();
 		else if (state.getBlock() instanceof BlockRotatedPillar)
-			state = state.getBlock().getDefaultState().withProperty(BlockRotatedPillar.AXIS, EnumFacing.Axis.Y);
+			try { state = state.getBlock().getDefaultState().withProperty(BlockRotatedPillar.AXIS, EnumFacing.Axis.Y); } catch(Exception e) { System.out.println("Prevented crash from blockstate " + state); } // TODO: find a better fix
 		else if (state.getBlock() instanceof BlockLeaves)
 			state = state.withProperty(BlockLeaves.CHECK_DECAY, false).withProperty(BlockLeaves.DECAYABLE, false);
 		else if (!(state.getBlock() instanceof BlockFlower)) state = state.getBlock().getDefaultState();
